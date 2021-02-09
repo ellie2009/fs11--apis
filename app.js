@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const app = express();
 const data = require("./data/pokemon.js");
 
+console.log("mimi test and stuff");
+
 app.use(bodyParser.json());
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -15,8 +17,18 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.get("/pokemon/:id/attacks", function(req, res) {
+  for (let i = 0; i < data.length; i++) {
+    console.log(data[i]);
+    if (parseInt(data[i].id) === parseInt(req.params.id)) {
+      return res.send(data[i].attacks);
+    }
+  }
+  res.status(404).send("Pokemon does not exist");
+});
+
 app.get("/pokemon", function(req, res) {
-  res.send(data);
+  res.send(data); //where does data come from??
 });
 
 app.get("/pokemon/:id", function(req, res) {
