@@ -34,7 +34,7 @@ app.get("/pokemon", function(req, res) {
 
 app.get("/pokemon/:id", function(req, res) {
   for (let i = 0; i < data.length; i++) {
-    console.log(data[i]);
+    // console.log(data[i]);
     if (parseInt(data[i].id) === parseInt(req.params.id)) {
       return res.send(data[i]);
     }
@@ -66,12 +66,7 @@ console.log("Listening on port 3000...");
 
 app.put("/pokemon/:id", function(req, res) {
   //could you use the app.get() method here?
-  let index = -1;
-  for (let i = 0; i < data.length; i++) {
-    if (+data[i].id === +req.params.id) {
-      index = i;
-    }
-  }
+  const index = getIndexOfID(data, req.params.id);
 
   if (index === -1) {
     res.status(404).send("Not found. Pokemon with this ID doesn't exist");
@@ -91,9 +86,32 @@ app.put("/pokemon/:id", function(req, res) {
     res
       .status(200)
       .send(`Successfully updated pokemon with ID ${req.params.id}`);
-    res.end();
   }
 });
+
+app.delete("/pokemon/:id", function(req, res) {
+  const index = getIndexOfID(data, req.params.id);
+
+  if (index === -1) {
+    res.status(404).send("Not found. Pokemon with this ID doesn't exist");
+  } else {
+    data.splice(index, 1);
+    res
+      .status(200)
+      .send(`Successfully deleted pokemon with ID ${req.params.id}`);
+  }
+});
+
+function getIndexOfID(arr, value) {
+  let index = -1;
+  for (let i = 0; i < arr.length; i++) {
+    if (+arr[i].id === +value) {
+      index = i;
+    }
+  }
+  return index;
+}
+
 // METHOD res.end()
 // Ends the response process. Use to quickly end the response without any data. If you need to respond with data, instead use methods such as res.send() and res.json().
 
@@ -103,26 +121,10 @@ app.put("/pokemon/:id", function(req, res) {
 // res.send(`Successfully updated pokemon with ID ${req.params.id}`)
 // res.end();
 
-// - [ ] `DELETE` `/pokemon/{id}` should delete a pokemon by ID.
-// - To test this: after running your query in Postman, try to get that pokemon by ID.
-// - 200: OK
-// - 404: Not found (resource does not exist)
-
-app.delete("/pokemon/:id", function(req, res) {
-  let index = -1;
-  for (let i = 0; i < data.length; i++) {
-    if (+data[i].id === +req.params.id) {
-      index = i;
-    }
-  }
-
-  if (index === -1) {
-    res.status(404).send("Not found. Pokemon with this ID doesn't exist");
-  } else {
-    data.splice(index, 1);
-    res
-      .status(200)
-      .send(`Successfully deleted pokemon with ID ${req.params.id}`);
-    res.end();
-  }
-});
+// get index manually
+// let index = -1;
+// for (let i = 0; i < data.length; i++) {
+//   if (+data[i].id === +req.params.id) {
+//     index = i;
+//   }
+// }
