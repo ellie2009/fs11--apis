@@ -2,10 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const data = require("./data/pokemon.js");
-
-console.log("mimi test and stuff");
+const e = require("express");
 
 app.use(bodyParser.json());
+//this prepares the response object
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE"),
@@ -18,6 +18,7 @@ app.use(function(req, res, next) {
 });
 
 app.get("/pokemon/:id/attacks", function(req, res) {
+  console.log(req.params);
   for (let i = 0; i < data.length; i++) {
     console.log(data[i]);
     if (parseInt(data[i].id) === parseInt(req.params.id)) {
@@ -28,7 +29,7 @@ app.get("/pokemon/:id/attacks", function(req, res) {
 });
 
 app.get("/pokemon", function(req, res) {
-  res.send(data); //where does data come from??
+  res.send(data);
 });
 
 app.get("/pokemon/:id", function(req, res) {
@@ -40,9 +41,8 @@ app.get("/pokemon/:id", function(req, res) {
   }
   res.status(404).send("Pokemon does not exist");
 
-  /*
+  /* ALTERNATIVE
   const pokemon = data.find(e => parseInt(e.id) === parseInt(req.params.id))
-
   if (!pokemon) {
     res.status(404).send('Pokemon does not exist');
   }
@@ -50,6 +50,7 @@ app.get("/pokemon/:id", function(req, res) {
   */
 });
 
+// adds a new Pokemon object to the data
 app.post("/pokemon", function(req, res) {
   console.log(req.body);
   data.push(req.body);
@@ -62,3 +63,66 @@ app.get("/", function(req, res) {
 
 app.listen(3000);
 console.log("Listening on port 3000...");
+
+app.put("/pokemon/:id", function(req, res) {
+  //could you use the app.get() method here?
+  let index = -1;
+  for (let i = 0; i < data.length; i++) {
+    if (+data[i].id === +req.params.id) {
+      index = i;
+    }
+  }
+
+  if (index === -1) {
+    res.status(404).send("Not found. Pokemon with this ID doesn't exist");
+  } else {
+    let newObj = { ...data[index] };
+
+    for (let key in req.body) {
+      if (newObj.hasOwnProperty(key)) {
+        newObj[key] = req.body[key];
+      } else {
+        newObj = { ...newObj, [key]: req.body[key] };
+      }
+    }
+
+    data[index] = newObj;
+
+    res
+      .status(200)
+      .send(`Successfully updated pokemon with ID ${req.params.id}`);
+    res.end();
+  }
+});
+// METHOD res.end()
+// Ends the response process. Use to quickly end the response without any data. If you need to respond with data, instead use methods such as res.send() and res.json().
+
+// this replaces the entire pokemon except the ID
+// const newObj = {...req.params, ...req.body}
+// data[index]=newObj;
+// res.send(`Successfully updated pokemon with ID ${req.params.id}`)
+// res.end();
+
+// - [ ] `DELETE` `/pokemon/{id}` should delete a pokemon by ID.
+// - To test this: after running your query in Postman, try to get that pokemon by ID.
+// - 200: OK
+// - 404: Not found (resource does not exist)
+
+app.delete("/pokemon/:id", function(req, res) {
+  let index = -1;
+  for (let i = 0; i < data.length; i++) {
+    if (+data[i].id === +req.params.id) {
+      index = i;
+    }
+  }
+
+  if (index === -1) {
+    res.status(404).send("Not found. Pokemon with this ID doesn't exist");
+  } else {
+    data.splice(index, 1);
+    res
+      .status(200)
+      .send(`Successfully deleted pokemon with ID ${req.params.id}`);
+    res.end();
+  }
+});
